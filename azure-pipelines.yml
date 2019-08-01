@@ -33,8 +33,9 @@ steps:
 
 - script: |
     npm install
+    npm run build
     npm test
-  displayName: 'npm install, test, and build'
+  displayName: 'npm install, build, and test'
 
 - script: |
     pip install pipenv
@@ -43,3 +44,19 @@ steps:
     npm test
   workingDirectory: lambda
   displayName: 'pipenv install, test'
+
+- script: |
+    npm run e2e
+  displayName: 'e2e tests'
+
+- task: CopyFiles@2
+  inputs:
+    contents: '**/__diff_output__/**'
+    targetFolder: $(Build.ArtifactStagingDirectory)
+  condition: failed()
+  
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    artifactName: drop
+  condition: failed()
